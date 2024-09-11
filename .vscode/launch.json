@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/BOGDAN/my_gits/third_course/OPP",
-      "program": "c:/Users/BOGDAN/my_gits/third_course/OPP/build/Debug/outDebug",
+      "cwd": "c:/Users/BOGDAN/my_gits/third_course/OPP/L1",
+      "program": "c:/Users/BOGDAN/my_gits/third_course/OPP/L1/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
