@@ -1,3 +1,3 @@
 # Численные методы
-## [L1](ChM/L1/README.md)
+## [L1](L1/README.md)
 ### Interpolation of funcs
