@@ -79,7 +79,6 @@ int_matrix omp_transpose(int_matrix &MTR){
         for(int i = 0; i < N; ++i){
             for(int j = id; j < M; j+= cnt_threads){
                 tmp[i][j] = MTR[j][i];
-                //cout << i << '-' <<  j << '\n';
             }
         }
     }
@@ -91,22 +90,23 @@ int_matrix omp_transpose(int_matrix &MTR){
 int main(){
     // random seed
     srand(time(0));
-
-    int_matrix MTR = make_test(1, 3);
-    // print(MTR);
-    print(MTR);
-    int_matrix TMTR = omp_transpose(MTR);
-    print(TMTR);
-    // print(MTR);
-    //double start_time, run_time;
-
-    //start_time = omp_get_wtime();
-    // cout << start_time << '\n';
-    //int_matrix T_MTR = transpose(MTR);
-    //run_time = omp_get_wtime() - start_time;
-
-    //cout << run_time <<'\n';
-    //print(T_MTR);
-    cout << omp_get_max_threads();
+    fstream fin("in.in");
+    int M, N;
+    fin >> M >> N;
+    fin.close();
+    int_matrix MTR = make_test( M, N);
+    double start_time, run_time;
+    start_time = omp_get_wtime();
+    transpose(MTR);
+    run_time = omp_get_wtime() - start_time;
+    PRINT_TIME_MESSAGE("NO OMP", run_time);
+    start_time = omp_get_wtime();
+    omp_transpose(MTR);
+    run_time = omp_get_wtime() - start_time;
+    PRINT_TIME_MESSAGE("WITH OMP", run_time);
+    //print(MTR);
+    //cout << '\n';
+    //print(TMTR);
+    //cout << '\n';
     return 0;
 }
