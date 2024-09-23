@@ -38,3 +38,6 @@
 # .venv
 .venv/
 .vscode/settings.json
+
+.png
+.jpg
