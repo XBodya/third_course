@@ -39,5 +39,5 @@
 .venv/
 .vscode/settings.json
 
-.png
-.jpg
+*.png
+*.jpg
