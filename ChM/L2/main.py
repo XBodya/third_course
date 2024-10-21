@@ -5,6 +5,7 @@ from pprint import pprint
 
 LEFT = 0.5
 RIGHT = 1.5
+Y_LIM_UP, Y_LIM_DOWN = 0.25, 0
 
 n = int(input())
 matrix_divided_diff = np.zeros((n + 1, n + 2), dtype=np.float32)
@@ -76,19 +77,49 @@ def calc_divided_diff_by_formula(nodes, n, m):
 
 def calc_coef_divdiff_v3(nodes, n):
     KOEFFS = []
-    for k in range(n):
+    for k in range(n + 1):
         KOEFFS.append(calc_divided_diff_by_formula(nodes, k, k))
     return KOEFFS
 
 
+def newton_polynomial(koeffs, nodes, x):
+    deg_plus_1 = len(koeffs)
+    result = 0
+    for i in range(deg_plus_1):
+        _mul = koeffs[i]
+        for j in range(i):
+            _mul *= (x - nodes[j])
+        result += _mul
+    return result
+
+
 def main(n):
     a = np.linspace(LEFT, RIGHT, n+1)
+    a_2 = np.linspace(LEFT, RIGHT, 2*n+1)
     v1 = get_newton_coefs_1(a, n)
     v2 = calc_coef_by_matr_divided_diff(a, n)
     v3 = calc_coef_divdiff_v3(a, n)
     print(v1)
     print(v2)
     print(v3)
+    print(my_func(1))
+    print(newton_polynomial(v1, a, 0.78))
+    fig, ax = plt.subplots(figsize=(20, 9))
+    ax.plot(a_2, list(map(lambda x: my_func(x), a_2)), color='r',
+            linewidth=2, label='функция')
+
+    ax.plot(a_2, list(map(lambda x: newton_polynomial(v2[0][1:], a, x), a_2)),
+            '--', linewidth=2, label='интерполяция способ 2',
+            color='b')
+    ax.plot(a, list(map(lambda x: newton_polynomial(v2[0][1:], a, x), a)), 'ro',
+            linewidth=6,
+            color='m')
+    ax.set_xlabel('x label')
+    ax.set_ylabel('y label')
+    plt.grid()
+    plt.ylim(Y_LIM_DOWN, Y_LIM_UP)
+    plt.legend()
+    plt.show()
 
 
 main(n)
