@@ -53,10 +53,16 @@ public class Container implements Cloneable {
     @Override
     public String toString() {
         String dataString = "";
-        for (Object curObject : data) {
-            dataString += (curObject.toString() + " ");
+        for (int i = 0; i < this.length; ++i) {
+            dataString += ((this.data[i] != null) ? this.data[i].toString() : "");
+            if (i != this.length - 1 && this.data[i] != null)
+                dataString += ", ";
         }
-        return "Container{length=" + length + ", data=[ " + dataString + "]}";
+        if (dataString.length() >= 2) {
+            if (dataString.charAt(dataString.length() - 2) == ',')
+                dataString = dataString.substring(0, dataString.length() - 2);
+        }
+        return "Container{length=" + length + ", data=[" + dataString + "]}";
     }
 
     @Override
