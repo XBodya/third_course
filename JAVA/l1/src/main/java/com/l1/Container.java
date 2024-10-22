@@ -2,20 +2,37 @@ package com.l1;
 
 import java.lang.annotation.Inherited;
 
+/*
+ * Class Container
+ */
 public class Container implements Cloneable {
+    /*
+     * @param length: count of elements in container
+     * 
+     * @param data: array of elements
+     */
     private int length;
     private Object[] data;
 
+    /*
+     * Default constructor
+     */
     Container() {
         this.length = 0;
         this.data = new Object[0];
     }
 
+    /*
+     * Constructor with length of container
+     */
     Container(int length) {
         this.length = length;
         this.data = new Object[length];
     }
 
+    /*
+     * Constructor based on other array of objects
+     */
     Container(Object[] otherArray) {
         this(otherArray.length);
         for (int i = 0; i < this.length; ++i) {
@@ -23,10 +40,16 @@ public class Container implements Cloneable {
         }
     }
 
+    /*
+     * Constructor of coping
+     */
     Container(Container otherContainer) {
         this(otherContainer.data);
     }
 
+    /*
+     * @return String by example Container{length=@length, data=[@elements_of_data]}
+     */
     @Override
     public String toString() {
         String dataString = "";
@@ -42,6 +65,9 @@ public class Container implements Cloneable {
         return clonedContainer;
     }
 
+    /*
+     * @return true if objects is equal else false
+     */
     public boolean equals(Object obj) {
         if (obj == null && this != null)
             return false;
@@ -78,6 +104,9 @@ public class Container implements Cloneable {
         this.set(length, obj);
     }
 
+    /*
+     * method for resize Container and changed length on newLength
+     */
     public void resize(int newLength) {
         Object[] newData = new Object[newLength];
         for (int i = 0; i < newLength; ++i) {
@@ -107,6 +136,9 @@ public class Container implements Cloneable {
         this.length -= 1;
     }
 
+    /*
+     * delete element with index of @index and @return this element
+     */
     public Object pop(int index) {
         Object popElement = this.get(index);
         this.delete(index);
