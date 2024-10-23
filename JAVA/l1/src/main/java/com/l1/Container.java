@@ -106,18 +106,20 @@ public class Container implements Cloneable {
     }
 
     public void addToEnd(Object obj) {
-        this.resize(length + 1);
-        this.set(length, obj);
+        this.resize(this.length + 1);
+        this.data[this.length - 1] = obj;
     }
 
     /*
      * method for resize Container and changed length on newLength
+     * 
+     * @param newLength -- new size of array
      */
     public void resize(int newLength) {
         Object[] newData = new Object[newLength];
         for (int i = 0; i < newLength; ++i) {
             if (i < length) {
-                newData[i] = data[i];
+                newData[i] = this.data[i];
             }
         }
         this.data = newData;
