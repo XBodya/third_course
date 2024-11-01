@@ -82,33 +82,32 @@ def fix_image_size_for_jpeg(_pixels_arr, size):
     for i in range(size[0] + need_cols):
         for j in range(size[1] + need_rows):
             if i < size[0] and j < size[1]:
-                new_pixels_arr[i][j] = tuple(_pixels_arr[i][j])
+                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(
+                    tuple(_pixels_arr[i][j]))
             elif i < size[0] and j >= size[1]:
-                new_pixels_arr[i][j] = tuple(new_pixels_arr[i][size[1] - 1])
+                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(
+                    tuple(new_pixels_arr[i][size[1] - 1]))
             else:
-                try:
-                    new_pixels_arr[i][j] = tuple(
-                        new_pixels_arr[size[0] - 1][j])
-                except Exception:
-                    print(f"i:{i}, j:{j}")
+                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(tuple(
+                    new_pixels_arr[size[0] - 1][j]))
     return new_pixels_arr
 
 
 def convert_pixel_rgb2ycbcr(_pixel_rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
     # return np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector_rgb2ycbcr
-    return (round(0.299 * _pixel_rgb[0] + 0.587 * _pixel_rgb[1] + 0.114 * _pixel_rgb[2]),
-            round(128 + (-0.168736) *
-                  _pixel_rgb[0] - 0.331264 * _pixel_rgb[1] + 0.5 * _pixel_rgb[2]),
-            round(128 + 0.5 * _pixel_rgb[0] - 0.418688 * _pixel_rgb[1] - 0.081312 * _pixel_rgb[2]))
+    return (int(0.299 * _pixel_rgb[0] + 0.587 * _pixel_rgb[1] + 0.114 * _pixel_rgb[2]),
+            int(128 + (-0.168736) *
+                _pixel_rgb[0] - 0.3313 * _pixel_rgb[1] + 0.5 * _pixel_rgb[2]),
+            int(128 + 0.5 * _pixel_rgb[0] - 0.4187 * _pixel_rgb[1] - 0.0813 * _pixel_rgb[2]))
 
 
 def convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[int, int, int]:
     # return np.dot((_pixel_ycbcr - convertation_vector_rgb2ycbcr), convertation_matrix_ycbcr2rgb)
     return (
-        round(_pixel_ycbcr[0] + 1.402 * (_pixel_ycbcr[2] - 128)),
-        round(_pixel_ycbcr[0] - 0.34414 *
-              (_pixel_ycbcr[1] - 128) - 0.71414 * (_pixel_ycbcr[2] - 128)),
-        round(_pixel_ycbcr[0] + 1.772 * (_pixel_ycbcr[1] - 128))
+        int(_pixel_ycbcr[0] + 1.402 * (_pixel_ycbcr[2] - 128)),
+        int(_pixel_ycbcr[0] - 0.34414 *
+            (_pixel_ycbcr[1] - 128) - 0.71414 * (_pixel_ycbcr[2] - 128)),
+        int(_pixel_ycbcr[0] + 1.772 * (_pixel_ycbcr[1] - 128))
     )
 
 
@@ -194,11 +193,50 @@ def divide_on_blocks(_pixel_array, size):
     return blocks
 
 
+def encode_jpeg(path_to_image, out='filename.myjpeg'):
+    main_image = Image.open(path_to_image).convert('RGB')
+    _pixel_array = np.asarray(main_image)
+    _fixed_pixel_array = fix_image_size_for_jpeg(
+        _pixel_array, (main_image.size)[::-1])
+    _blocks = divide_on_blocks(_fixed_pixel_array, (len(
+        _fixed_pixel_array), len(_fixed_pixel_array[0])))
+    Y = [block[:, :, 0] for block in _blocks]
+    Cb = [block[:, :, 1] for block in _blocks]
+    Cr = [block[:, :, 2] for block in _blocks]
+    # print(Y)
+    # print(Cr)
+    # print(Cb)
+    # print(_blocks)
+    try:
+        Y_dct = [discrete_cosine_transform(_Y) for _Y in Y]
+        Cb_dct = [discrete_cosine_transform(_Cb) for _Cb in Cb]
+        Cr_dct = [discrete_cosine_transform(_Cr) for _Cr in Cr]
+    except:
+        print(len(Y_dct[-1]))
+    # print(Y_dct)
+    # print(Cr_dct)
+    # print(Cb_dct)
+    Y_quan = [quantization(_Y) for _Y in Y_dct]
+    Cb_quan = [quantization(
+        _Cb, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cb in Cb_dct]
+    Cr_quan = [quantization(
+        _Cr, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cr in Cr_dct]
+    # print(Y_quan)
+    # print(Cr_quan)
+    # print(Cb_quan)
+    Y_rle = [RLE(_Y) for _Y in Y_quan]
+    Cb_rle = [RLE(_Cb) for _Cb in Cb_quan]
+    Cr_rle = [RLE(_Cr) for _Cr in Cr_quan]
+    # print(Y_rle, Cr_rle, Cb_rle, file='kek.txt')
+    # with open('kek.txt', 'w') as file:
+    #     file.write(f"{Y_rle}\n{Cr_rle}\n{Cb_rle}")
+
+
 if __name__ == '__main__':
     # print(matrix_of_dct)
     # print(discrete_cosine_transform([]))
     # print((test_eye * 5) / (test_eye * 5))
-    print(np.dot(inv_matrix_of_dct, matrix_of_dct))
-    print(inv_transposed_matrix_of_dct)
+    # print(np.dot(inv_matrix_of_dct, matrix_of_dct))
+    # print(inv_transposed_matrix_of_dct)
 
     pass

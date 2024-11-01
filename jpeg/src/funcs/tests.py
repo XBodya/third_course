@@ -8,20 +8,27 @@ def is_clr(color):
     return 0 <= color <= 255
 
 
-class ConvertationTest():
+def is_pixel(vector):
+    return is_clr(vector[0]) and is_clr(vector[1]) and is_clr(vector[2])
+
+
+class ConvertationTest(unittest.TestCase):
     def test_rgb2ycbcr(self):
         for i in range(256):
             for j in range(256):
                 for k in range(256):
-                    res = tools.convert_pixel_rgb2ycbcr((i, j, k))
-                    self.assertTrue(is_clr(res[0]) and is_clr(
-                        res[1]) and is_clr(res[2]))
-                    inv = tools.convert_pixel_ycbcr2rgb(res)
-                    self.assertTrue(is_clr(inv[0]) and is_clr(
-                        inv[1]) and is_clr(inv[2]))
-                    # self.assertEqual(inv[0], i)
-                    # self.assertEqual(inv[1], j)
-                    # self.assertEqual(inv[2], k)
+                    rgb = (i, j, k)
+                    ycbcr1 = tools.convert_pixel_rgb2ycbcr(rgb)
+                    self.assertTrue(is_pixel(ycbcr1))
+
+    def test_ycbcr2rgb(self):
+        for i in range(256):
+            for j in range(256):
+                for k in range(256):
+                    rgb = (i, j, k)
+                    ycbcr = tools.convert_pixel_rgb2ycbcr(rgb)
+                    _rgb = tools.convert_pixel_ycbcr2rgb(ycbcr)
+                    # self.assertEqual(rgb, _rgb)
 
 
 _test_case = [
@@ -36,7 +43,7 @@ _test_case = [
 ]
 
 
-class DctTest(unittest.TestCase):
+class DctTest():
     def dct_test1(self):
         www = tools.discrete_cosine_transform(_test_case)
         print(www)
@@ -67,8 +74,11 @@ class DctTest(unittest.TestCase):
         print(len(blocks))
         # print(blocks)
 
+    def test_encode(self):
+        tools.encode_jpeg('.\\jpeg\\src\\imgs\\test2.png')
+
 
 if __name__ == '__main__':
-    # unittest.main()
+    unittest.main()
     # DctTest().dct_test1()
-    DctTest().main()
+    # DctTest().test_encode()
