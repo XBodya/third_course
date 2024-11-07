@@ -12,7 +12,7 @@ def is_pixel(vector):
     return is_clr(vector[0]) and is_clr(vector[1]) and is_clr(vector[2])
 
 
-class ConvertationTest(unittest.TestCase):
+class ConvertationTest():
     def test_rgb2ycbcr(self):
         for i in range(256):
             for j in range(256):
@@ -76,6 +76,12 @@ class DctTest():
 
     def test_encode(self):
         tools.encode_jpeg('.\\jpeg\\src\\imgs\\test2.png')
+
+
+class QuantizationTC(unittest.TestCase):
+    def test1(self):
+        tools.encode_jpeg(1, "")
+        print(tools.matrix_of_quantization)
 
 
 if __name__ == '__main__':

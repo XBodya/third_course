@@ -24,6 +24,16 @@ convertation_matrix_ycbcr2rgb = np.array([
     [1, 1.772, 0]
 ], dtype=np.float32).T
 
+matrix_of_quantization = np.zeros((8, 8), dtype=int)
+
+
+def init_matrix_of_q(_quality_factor):
+    for i in range(8):
+        for j in range(8):
+            matrix_of_quantization[i][j] = 1 + (i * j) * _quality_factor
+    print(matrix_of_quantization)
+
+
 matrix_of_quantization_for_y = np.array([
     [16, 11, 10, 16, 24, 40, 51, 61],
     [12, 12, 14, 19, 26, 58, 60, 55],
@@ -193,43 +203,45 @@ def divide_on_blocks(_pixel_array, size):
     return blocks
 
 
-def encode_jpeg(path_to_image, out='filename.myjpeg'):
-    main_image = Image.open(path_to_image).convert('RGB')
-    _pixel_array = np.asarray(main_image)
-    _fixed_pixel_array = fix_image_size_for_jpeg(
-        _pixel_array, (main_image.size)[::-1])
-    _blocks = divide_on_blocks(_fixed_pixel_array, (len(
-        _fixed_pixel_array), len(_fixed_pixel_array[0])))
-    Y = [block[:, :, 0] for block in _blocks]
-    Cb = [block[:, :, 1] for block in _blocks]
-    Cr = [block[:, :, 2] for block in _blocks]
-    # print(Y)
-    # print(Cr)
-    # print(Cb)
-    # print(_blocks)
-    try:
-        Y_dct = [discrete_cosine_transform(_Y) for _Y in Y]
-        Cb_dct = [discrete_cosine_transform(_Cb) for _Cb in Cb]
-        Cr_dct = [discrete_cosine_transform(_Cr) for _Cr in Cr]
-    except:
-        print(len(Y_dct[-1]))
-    # print(Y_dct)
-    # print(Cr_dct)
-    # print(Cb_dct)
-    Y_quan = [quantization(_Y) for _Y in Y_dct]
-    Cb_quan = [quantization(
-        _Cb, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cb in Cb_dct]
-    Cr_quan = [quantization(
-        _Cr, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cr in Cr_dct]
-    # print(Y_quan)
-    # print(Cr_quan)
-    # print(Cb_quan)
-    Y_rle = [RLE(_Y) for _Y in Y_quan]
-    Cb_rle = [RLE(_Cb) for _Cb in Cb_quan]
-    Cr_rle = [RLE(_Cr) for _Cr in Cr_quan]
-    # print(Y_rle, Cr_rle, Cb_rle, file='kek.txt')
-    # with open('kek.txt', 'w') as file:
-    #     file.write(f"{Y_rle}\n{Cr_rle}\n{Cb_rle}")
+def encode_jpeg(quality_factor, path_to_image, out='filename.myjpeg'):
+    init_matrix_of_q(_quality_factor=quality_factor)
+    print(matrix_of_quantization)
+    # main_image = Image.open(path_to_image).convert('RGB')
+    # _pixel_array = np.asarray(main_image)
+    # _fixed_pixel_array = fix_image_size_for_jpeg(
+    #     _pixel_array, (main_image.size)[::-1])
+    # _blocks = divide_on_blocks(_fixed_pixel_array, (len(
+    #     _fixed_pixel_array), len(_fixed_pixel_array[0])))
+    # Y = [block[:, :, 0] for block in _blocks]
+    # Cb = [block[:, :, 1] for block in _blocks]
+    # Cr = [block[:, :, 2] for block in _blocks]
+    # # print(Y)
+    # # print(Cr)
+    # # print(Cb)
+    # # print(_blocks)
+    # try:
+    #     Y_dct = [discrete_cosine_transform(_Y) for _Y in Y]
+    #     Cb_dct = [discrete_cosine_transform(_Cb) for _Cb in Cb]
+    #     Cr_dct = [discrete_cosine_transform(_Cr) for _Cr in Cr]
+    # except:
+    #     print(len(Y_dct[-1]))
+    # # print(Y_dct)
+    # # print(Cr_dct)
+    # # print(Cb_dct)
+    # Y_quan = [quantization(_Y) for _Y in Y_dct]
+    # Cb_quan = [quantization(
+    #     _Cb, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cb in Cb_dct]
+    # Cr_quan = [quantization(
+    #     _Cr, __matrix_of_quantization=matrix_of_quantization_for_c) for _Cr in Cr_dct]
+    # # print(Y_quan)
+    # # print(Cr_quan)
+    # # print(Cb_quan)
+    # Y_rle = [RLE(_Y) for _Y in Y_quan]
+    # Cb_rle = [RLE(_Cb) for _Cb in Cb_quan]
+    # Cr_rle = [RLE(_Cr) for _Cr in Cr_quan]
+    # # print(Y_rle, Cr_rle, Cb_rle, file='kek.txt')
+    # # with open('kek.txt', 'w') as file:
+    # #     file.write(f"{Y_rle}\n{Cr_rle}\n{Cb_rle}")
 
 
 if __name__ == '__main__':
