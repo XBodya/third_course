@@ -4,27 +4,8 @@ from PIL import Image
 from numpy import linalg
 from typing import Tuple, List
 from math import pi
+from my_consts import *
 import itertools
-
-convertation_matrix_rgb2ycbcr = np.array([
-    [0.299, 0.587, 0.114],
-    [0.168736, -0.331254, 0.5],
-    [0.5, -0.418688, -0.081312]
-], dtype=np.float32).T
-
-convertation_vector_rgb2ycbcr = np.array([
-    [0],
-    [128],
-    [128]
-], dtype=np.float32).T
-
-convertation_matrix_ycbcr2rgb = np.array([
-    [1, 0, 1.402],
-    [1, -0.34414, -0.71414],
-    [1, 1.772, 0]
-], dtype=np.float32).T
-
-matrix_of_quantization = np.zeros((8, 8), dtype=int)
 
 
 def init_matrix_of_q(_quality_factor):
@@ -33,28 +14,6 @@ def init_matrix_of_q(_quality_factor):
             matrix_of_quantization[i][j] = 1 + (i * j) * _quality_factor
     print(matrix_of_quantization)
 
-
-matrix_of_quantization_for_y = np.array([
-    [16, 11, 10, 16, 24, 40, 51, 61],
-    [12, 12, 14, 19, 26, 58, 60, 55],
-    [14, 13, 16, 24, 40, 57, 69, 56],
-    [14, 17, 22, 29, 51, 87, 80, 62],
-    [18, 22, 37, 56, 68, 109, 103, 77],
-    [24, 35, 55, 64, 81, 104, 113, 92],
-    [49, 64, 78, 87, 103, 121, 120, 101],
-    [72, 92, 95, 98, 112, 100, 103, 99]
-])
-
-matrix_of_quantization_for_c = np.array([
-    [17, 18, 24, 47, 99, 99, 99, 99],
-    [18, 21, 26, 66, 99, 99, 99, 99],
-    [24, 26, 56, 99, 99, 99, 99, 99],
-    [47, 66, 99, 99, 99, 99, 99, 99],
-    [99, 99, 99, 99, 99, 99, 99, 99],
-    [99, 99, 99, 99, 99, 99, 99, 99],
-    [99, 99, 99, 99, 99, 99, 99, 99],
-    [99, 99, 99, 99, 99, 99, 99, 99]
-])
 
 test_eye = np.eye(5)
 
@@ -72,11 +31,6 @@ transposed_matrix_of_dct = matrix_of_dct.T
 inv_matrix_of_dct = linalg.inv(matrix_of_dct)
 
 inv_transposed_matrix_of_dct = linalg.inv(transposed_matrix_of_dct)
-
-zigzag_way = [0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18, 11, 4, 5, 12, 19, 26, 33,
-              40, 48, 41, 34, 27, 20, 13, 6, 7, 14, 21, 28, 35, 42, 49, 56, 57, 50,
-              43, 36, 29, 22, 15, 23, 30, 37, 44, 51, 58, 59, 52, 45, 38, 31, 39,
-              46, 53, 60, 61, 54, 47, 55, 62, 63]
 
 
 def fix_image_size_for_jpeg(_pixels_arr, size):
@@ -102,27 +56,64 @@ def fix_image_size_for_jpeg(_pixels_arr, size):
                     new_pixels_arr[size[0] - 1][j]))
     return new_pixels_arr
 
+# *  JPEG/JFIF YCbCr conversions
 
-def convert_pixel_rgb2ycbcr(_pixel_rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
+#      Y  = R *  0.29900 + G *  0.58700 + B *  0.11400
+#      Cb = R * -0.16874 + G * -0.33126 + B *  0.50000 + 128
+#      Cr = R *  0.50000 + G * -0.41869 + B * -0.08131 + 128
+
+
+# def convert_pixel_rgb2ycbcr(_pixel_rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
+#     # return np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector_rgb2ycbcr
+#     return (int(np.float64(0.29900) * _pixel_rgb[0] + np.float64(0.58700) * _pixel_rgb[1] + np.float64(0.11400) * _pixel_rgb[2]),
+#             int(128 + np.float64(-0.16874) *
+#                 _pixel_rgb[0] - np.float64(0.33126) * _pixel_rgb[1] + np.float64(0.50000) * _pixel_rgb[2]),
+#             int(128 + np.float64(0.50000) * _pixel_rgb[0] - np.float64(0.41869) * _pixel_rgb[1] - np.float64(0.08131) * _pixel_rgb[2]))
+
+
+# def convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[int, int, int]:
+#     # return np.dot((_pixel_ycbcr - convertation_vector_rgb2ycbcr), convertation_matrix_ycbcr2rgb)
+#     return (
+#         round(_pixel_ycbcr[0] + 1.402 * (_pixel_ycbcr[2] - 128)),
+#         round(_pixel_ycbcr[0] - 0.344136 *
+#               (_pixel_ycbcr[1] - 128) - 0.714136 * (_pixel_ycbcr[2] - 128)),
+#         round(_pixel_ycbcr[0] + 1.772 * (_pixel_ycbcr[1] - 128))
+#     )
+
+
+def matrix_convert_pixel_rgb2ycbcr(_pixel_rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
     # return np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector_rgb2ycbcr
-    return (int(0.299 * _pixel_rgb[0] + 0.587 * _pixel_rgb[1] + 0.114 * _pixel_rgb[2]),
-            int(128 + (-0.168736) *
-                _pixel_rgb[0] - 0.3313 * _pixel_rgb[1] + 0.5 * _pixel_rgb[2]),
-            int(128 + 0.5 * _pixel_rgb[0] - 0.4187 * _pixel_rgb[1] - 0.0813 * _pixel_rgb[2]))
+    return np.round((np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector)[0]).astype(int)
 
 
-def convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[int, int, int]:
+def matrix_convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[int, int, int]:
     # return np.dot((_pixel_ycbcr - convertation_vector_rgb2ycbcr), convertation_matrix_ycbcr2rgb)
-    return (
-        int(_pixel_ycbcr[0] + 1.402 * (_pixel_ycbcr[2] - 128)),
-        int(_pixel_ycbcr[0] - 0.34414 *
-            (_pixel_ycbcr[1] - 128) - 0.71414 * (_pixel_ycbcr[2] - 128)),
-        int(_pixel_ycbcr[0] + 1.772 * (_pixel_ycbcr[1] - 128))
-    )
+    return np.round(np.dot((_pixel_ycbcr - convertation_vector), convertation_matrix_ycbcr2rgb)[0]).astype(int)
 
 
-def subsampling(_pixel_arr):
-    pass
+def subsampling(array_color_channel):
+    for i in range(0, len(array_color_channel), 2):
+        for j in range(0, len(array_color_channel[0]), 2):
+            average_color = array_color_channel[i][j]
+            average_color += array_color_channel[i + 1][j]
+            average_color += array_color_channel[i][j + 1]
+            average_color += array_color_channel[i + 1][j + 1]
+            average_color = round(average_color / 4)
+            # array_color_channel[i][j] = average_color
+            # array_color_channel[i + 1][j] = average_color
+            # array_color_channel[i][j + 1] = average_color
+            # array_color_channel[i + 1][j + 1] = average_color
+
+            print(f"BLOCK, avg:{average_color}")
+            print(array_color_channel[i][j],
+                  array_color_channel[i][j + 1])
+            print(array_color_channel[i + 1][j],
+                  array_color_channel[i + 1][j + 1])
+
+            array_color_channel[i][j] = average_color
+            array_color_channel[i + 1][j] = average_color
+            array_color_channel[i][j + 1] = average_color
+            array_color_channel[i + 1][j + 1] = average_color
 
 
 def inv_subsampling(_pixel_arr):
@@ -156,12 +147,12 @@ def inv_discrete_cosine_transform(_pixel_arr):
     return np.round(np.dot(np.dot(transposed_matrix_of_dct, _pixel_arr), matrix_of_dct)).astype(int)
 
 
-def quantization(_pixel_arr, __matrix_of_quantization=matrix_of_quantization_for_y):
-    return np.round(_pixel_arr / __matrix_of_quantization).astype(int)
+def quantization(_pixel_arr):
+    return np.round(_pixel_arr / matrix_of_quantization).astype(int)
 
 
-def inv_quantization(_pixel_arr, __matrix_of_quantization=matrix_of_quantization_for_c):
-    return np.round(_pixel_arr * __matrix_of_quantization).astype(int)
+def inv_quantization(_pixel_arr):
+    return np.round(_pixel_arr * matrix_of_quantization).astype(int)
 
 
 def RLE(_pixel_arr):
@@ -201,6 +192,25 @@ def divide_on_blocks(_pixel_array, size):
         for j in range(0, img_h, 8):
             blocks.append(_pixel_array[i:i+8][j:j+8])
     return blocks
+
+
+def save_image_fromarray(parray, filename):
+    image_plot = np.array(parray, dtype=np.uint8)
+    new_image = Image.fromarray(image_plot)
+    new_image.save(filename)
+
+
+def fix_pixel(pixel: Tuple[int, int, int]) -> Tuple[int, int, int]:
+    return (max(min(pixel[0], 255), 0), max(min(pixel[1], 255), 0), max(min(pixel[2], 255), 0))
+
+
+def combine_color_channels(first, second, third):
+    image_plot = np.zeros((first.shape[0], first.shape[1], 3))
+    for i in range(first.shape[0]):
+        for j in range(first.shape[1]):
+            image_plot[i][j] = np.array(
+                (first[i][j], second[i][j], third[i][j]), dtype=np.uint8)
+    return image_plot
 
 
 def encode_jpeg(quality_factor, path_to_image, out='filename.myjpeg'):
@@ -250,5 +260,7 @@ if __name__ == '__main__':
     # print((test_eye * 5) / (test_eye * 5))
     # print(np.dot(inv_matrix_of_dct, matrix_of_dct))
     # print(inv_transposed_matrix_of_dct)
-
-    pass
+    print(convertation_matrix_ycbcr2rgb)
+    print(convertation_matrix_rgb2ycbcr)
+    print(linalg.inv(convertation_matrix_ycbcr2rgb))
+    # print(convert_pixel_rgb2ycbcr((0, 20, 100)))

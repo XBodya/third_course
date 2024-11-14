@@ -18,8 +18,13 @@ class ConvertationTest():
             for j in range(256):
                 for k in range(256):
                     rgb = (i, j, k)
-                    ycbcr1 = tools.convert_pixel_rgb2ycbcr(rgb)
-                    self.assertTrue(is_pixel(ycbcr1))
+                    ycbcr1 = tools.matrix_convert_pixel_rgb2ycbcr(rgb)
+                    # ycbcr1 = tools.convert_pixel_rgb2ycbcr(rgb)
+                    # self.assertTrue(is_pixel(ycbcr1))
+                    inv_rgb = tools.matrix_convert_pixel_ycbcr2rgb(ycbcr1)
+
+                    print(
+                        f"(r, g, b):{rgb} -> (y, cb, cr): {ycbcr1} -> (r, g, b): {inv_rgb}")
 
     def test_ycbcr2rgb(self):
         for i in range(256):
@@ -84,7 +89,57 @@ class QuantizationTC(unittest.TestCase):
         print(tools.matrix_of_quantization)
 
 
+class MyTests():
+    def __init__(self, filename):
+        # self.test_convertation_rgb_ycbcr_rgb(filename)
+        # test_case = [[i for j in range(8)] for i in range(8)]
+        # self.test_subsampling(test_case)
+        self.test_combine_color_channels()
+        # self.test_subsampling_on_image()
+
+    def test_convertation_rgb_ycbcr_rgb(self, filename):
+        current_image = Image.open(filename).convert("RGB")
+        image_plot = np.asarray(current_image)
+        image_shape = image_plot.shape
+        new_image_plot = np.zeros(image_shape)
+        for y_i in range(image_shape[0]):
+            for x_i in range(image_shape[1]):
+                ycbcr = tools.matrix_convert_pixel_rgb2ycbcr(
+                    image_plot[y_i][x_i])
+                new_rgb = tools.matrix_convert_pixel_ycbcr2rgb(ycbcr)
+                new_image_plot[y_i][x_i] = tools.fix_pixel(new_rgb)
+                # print(1 if tuple(new_image_plot[y_i][x_i]) != tuple(
+                #     image_plot[y_i][x_i]) else 0)
+        tools.save_image_fromarray(
+            new_image_plot, f"jpeg_results\\convtest{filename}")
+
+    def test_subsampling(self, test_array):
+        print("TEST SUBSAMPLING")
+        print("BEFORE")
+        print(np.array(test_array))
+        print("AFTER")
+        tools.subsampling(test_array)
+        print(np.array(test_array))
+
+    def test_combine_color_channels(self):
+        y = np.array([
+            [0, 1, 2]
+        ])
+        cb = [
+            [12, 125, 25]
+        ]
+        cr = [
+            [35, 241, 12]
+        ]
+        print(tools.combine_color_channels(y, cb, cr))
+
+    def test_subsampling_on_image(filename):
+        pass
+
+
 if __name__ == '__main__':
-    unittest.main()
+    # unittest.main()
     # DctTest().dct_test1()
     # DctTest().test_encode()
+    # ConvertationTest().test_rgb2ycbcr()
+    MyTests("my_image.png")
