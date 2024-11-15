@@ -12,7 +12,7 @@ def init_matrix_of_q(_quality_factor):
     for i in range(8):
         for j in range(8):
             matrix_of_quantization[i][j] = 1 + (i * j) * _quality_factor
-    print(matrix_of_quantization)
+    # print(matrix_of_quantization)
 
 
 test_eye = np.eye(5)
@@ -39,20 +39,20 @@ def fix_image_size_for_jpeg(_pixels_arr, size):
     # print(need_cols, need_rows)
     # print(size)
     if not need_cols and not need_rows:
-        return
+        return _pixels_arr
     new_pixels_arr = np.zeros(
         (size[0] + need_cols, size[1] + need_rows, 3), dtype=int)
     # for i in range(need_rows):
     for i in range(size[0] + need_cols):
         for j in range(size[1] + need_rows):
             if i < size[0] and j < size[1]:
-                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(
+                new_pixels_arr[i][j] = (
                     tuple(_pixels_arr[i][j]))
             elif i < size[0] and j >= size[1]:
-                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(
+                new_pixels_arr[i][j] = (
                     tuple(new_pixels_arr[i][size[1] - 1]))
             else:
-                new_pixels_arr[i][j] = convert_pixel_rgb2ycbcr(tuple(
+                new_pixels_arr[i][j] = (tuple(
                     new_pixels_arr[size[0] - 1][j]))
     return new_pixels_arr
 
@@ -91,6 +91,24 @@ def matrix_convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[
     return np.round(np.dot((_pixel_ycbcr - convertation_vector), convertation_matrix_ycbcr2rgb)[0]).astype(int)
 
 
+def array_rgb2ycbcr(pixel_arr):
+    ycbcr_image_plot = np.zeros(pixel_arr.shape)
+    for i in range(pixel_arr.shape[0]):
+        for j in range(pixel_arr.shape[1]):
+            ycbcr_image_plot[i][j] = matrix_convert_pixel_rgb2ycbcr(
+                pixel_arr[i][j])
+    return ycbcr_image_plot
+
+
+def array_ycbcr2rgb(pixel_arr):
+    rgb_image_plot = np.zeros(pixel_arr.shape)
+    for i in range(pixel_arr.shape[0]):
+        for j in range(pixel_arr.shape[1]):
+            rgb_image_plot[i][j] = fix_pixel(matrix_convert_pixel_ycbcr2rgb(
+                pixel_arr[i][j]))
+    return rgb_image_plot
+
+
 def subsampling(array_color_channel):
     for i in range(0, len(array_color_channel), 2):
         for j in range(0, len(array_color_channel[0]), 2):
@@ -104,11 +122,11 @@ def subsampling(array_color_channel):
             # array_color_channel[i][j + 1] = average_color
             # array_color_channel[i + 1][j + 1] = average_color
 
-            print(f"BLOCK, avg:{average_color}")
-            print(array_color_channel[i][j],
-                  array_color_channel[i][j + 1])
-            print(array_color_channel[i + 1][j],
-                  array_color_channel[i + 1][j + 1])
+            # print(f"BLOCK, avg:{average_color}")
+            # print(array_color_channel[i][j],
+            #       array_color_channel[i][j + 1])
+            # print(array_color_channel[i + 1][j],
+            #       array_color_channel[i + 1][j + 1])
 
             array_color_channel[i][j] = average_color
             array_color_channel[i + 1][j] = average_color
@@ -185,13 +203,26 @@ def inv_RLE(_rle_array):
     return matrix_peace
 
 
-def divide_on_blocks(_pixel_array, size):
+def divide_on_blocks(_pixel_array):
     blocks = []
-    img_w, img_h = size[0], size[1]
+    img_w, img_h = _pixel_array.shape[0], _pixel_array.shape[1]
+    print(img_w, img_h)
     for i in range(0, img_w, 8):
         for j in range(0, img_h, 8):
-            blocks.append(_pixel_array[i:i+8][j:j+8])
-    return blocks
+            blocks.append(_pixel_array[i:i+8, j:j+8])
+    return np.array(blocks)
+
+
+def combine_blocks(blocks, _shape):
+    combined_channel = np.zeros(_shape, dtype=int)
+    block_ind = 0
+    for i in range(_shape[0] // 8):
+        for j in range(_shape[1] // 8):
+            for k in range(8):
+                for h in range(8):
+                    combined_channel[i + k][j + h] = blocks[block_ind][k][h]
+            block_ind += 1
+    return combined_channel
 
 
 def save_image_fromarray(parray, filename):
@@ -204,7 +235,7 @@ def fix_pixel(pixel: Tuple[int, int, int]) -> Tuple[int, int, int]:
     return (max(min(pixel[0], 255), 0), max(min(pixel[1], 255), 0), max(min(pixel[2], 255), 0))
 
 
-def combine_color_channels(first, second, third):
+def combine_color_channels(first: np.array, second, third):
     image_plot = np.zeros((first.shape[0], first.shape[1], 3))
     for i in range(first.shape[0]):
         for j in range(first.shape[1]):

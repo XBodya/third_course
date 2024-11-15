@@ -94,8 +94,9 @@ class MyTests():
         # self.test_convertation_rgb_ycbcr_rgb(filename)
         # test_case = [[i for j in range(8)] for i in range(8)]
         # self.test_subsampling(test_case)
-        self.test_combine_color_channels()
-        # self.test_subsampling_on_image()
+        # self.test_combine_color_channels()
+        # self.test_subsampling_on_image('testcase.png')
+        self.test_dct_and_quan('list.png')
 
     def test_convertation_rgb_ycbcr_rgb(self, filename):
         current_image = Image.open(filename).convert("RGB")
@@ -111,7 +112,7 @@ class MyTests():
                 # print(1 if tuple(new_image_plot[y_i][x_i]) != tuple(
                 #     image_plot[y_i][x_i]) else 0)
         tools.save_image_fromarray(
-            new_image_plot, f"jpeg_results\\convtest{filename}")
+            new_image_plot, f"jpeg_results\\convtest_{filename}")
 
     def test_subsampling(self, test_array):
         print("TEST SUBSAMPLING")
@@ -133,8 +134,84 @@ class MyTests():
         ]
         print(tools.combine_color_channels(y, cb, cr))
 
-    def test_subsampling_on_image(filename):
-        pass
+    def test_subsampling_on_image(self, filename):
+        current_image = Image.open(filename).convert("RGB")
+        rgb_image_plot = np.asarray(current_image)
+        rgb_image_plot = tools.fix_image_size_for_jpeg(
+            rgb_image_plot, rgb_image_plot.shape)
+        ycbcr_image_plot = tools.array_rgb2ycbcr(rgb_image_plot)
+        Y = ycbcr_image_plot[:, :, 0]
+        Cb = ycbcr_image_plot[:, :, 1]
+        Cr = ycbcr_image_plot[:, :, 2]
+        print(Cb)
+        print(Cr)
+        tools.subsampling(Cb)
+        tools.subsampling(Cr)
+        print(Cb)
+        print(Cr)
+        new_ycbcr_plot = tools.combine_color_channels(Y, Cb, Cr)
+        new_rgb_plot = tools.array_ycbcr2rgb(new_ycbcr_plot)
+        tools.save_image_fromarray(
+            new_rgb_plot, f"jpeg_results/subsampling_{filename}")
+
+    def test_dct_and_quan(self, filename):
+        tools.init_matrix_of_q(10)
+
+        print(tools.matrix_of_quantization)
+        current_image = Image.open(filename).convert("RGB")
+        rgb_image_plot = np.asarray(current_image)
+        current_image.close()
+        rgb_image_plot = tools.fix_image_size_for_jpeg(
+            rgb_image_plot, rgb_image_plot.shape)
+        ycbcr_image_plot = tools.array_rgb2ycbcr(rgb_image_plot)
+        Y = ycbcr_image_plot[:, :, 0]
+        Cb = ycbcr_image_plot[:, :, 1]
+        Cr = ycbcr_image_plot[:, :, 2]
+        tools.subsampling(Cb)
+        tools.subsampling(Cr)
+        divided_Y = tools.divide_on_blocks(Y)
+        divided_Cb = tools.divide_on_blocks(Cb)
+        divided_Cr = tools.divide_on_blocks(Cr)
+        for i in range(len(divided_Y)):
+            divided_Y[i] = tools.quantization(
+                tools.discrete_cosine_transform(divided_Y[i]))
+            divided_Cb[i] = tools.quantization(
+                tools.discrete_cosine_transform(divided_Cb[i]))
+            divided_Cr[i] = tools.quantization(
+                tools.discrete_cosine_transform(divided_Cr[i]))
+
+        for i in range(len(divided_Y)):
+            divided_Y[i] = tools.inv_discrete_cosine_transform(
+                tools.inv_quantization(divided_Y[i]))
+            divided_Cb[i] = tools.inv_discrete_cosine_transform(
+                tools.inv_quantization(divided_Cb[i]))
+            divided_Cr[i] = tools.inv_discrete_cosine_transform(
+                tools.inv_quantization(divided_Cr[i]))
+        print(divided_Y.shape)
+        needed_shape = (rgb_image_plot.shape[0], rgb_image_plot.shape[1])
+        combined_Y = tools.combine_blocks(divided_Y, needed_shape)
+        combined_Cb = tools.combine_blocks(divided_Cb, needed_shape)
+        combined_Cr = tools.combine_blocks(divided_Cr, needed_shape)
+
+        print(combined_Y.shape)
+        print(combined_Cb.shape)
+        print(combined_Cr.shape)
+
+        new_ycbcr_plot = tools.combine_color_channels(
+            combined_Y, combined_Cb, combined_Cr)
+        new_rgb_plot = tools.array_ycbcr2rgb(new_ycbcr_plot)
+        tools.save_image_fromarray(
+            new_rgb_plot, f"jpeg_results/dct_and_quant_{filename}")
+        print("OK")
+
+        # print(Y)
+        # print(Y[0:8, 0:8].shape)
+        # print(Y[0:8, 0:8])
+        # tools.divide_on_blocks(Y)
+        # new_ycbcr_plot = tools.combine_color_channels(Y, Cb, Cr)
+        # new_rgb_plot = tools.array_ycbcr2rgb(new_ycbcr_plot)
+        # tools.save_image_fromarray(
+        #     new_rgb_plot, f"jpeg_results/subsampling_{filename}")
 
 
 if __name__ == '__main__':
