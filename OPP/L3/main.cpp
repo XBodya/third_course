@@ -111,10 +111,14 @@ struct double3{
             to_decart();    
         }
         else if(axis == 'x' or axis == 'X'){
-            
+            swap_axes_forward();
+            rotate_by_rad('z', phi);
+            swap_axes_backward();
         }
         else if(axis == 'y' or axis == 'Y'){
-
+            swap_axes_backward();
+            rotate_by_rad('z', phi);
+            swap_axes_forward();
         }
 
     }
@@ -144,17 +148,88 @@ struct double3{
         tmp.swap_axes_backward();
         return tmp;
     }
+
+    double3 get_rotate_by_rad(char axes, double phi){
+        double3 tmp(*this);
+        tmp.rotate_by_rad(axes, phi);
+        return tmp;
+    }
+
+    double3 get_rotate_by_grad(char axes, double phi){
+        double3 tmp(*this);
+        tmp.rotate_by_grad(axes, phi);
+        return tmp;
+    }
     
 };
 
+class Obj3D{
+public:
+    vector<double3> obj;
+    Obj3D();
+    Obj3D(int n){
+        obj.resize(n);
+    }
+    void random_fill(){
+        for(auto &point: obj){
+            point = double3 (rand() % 100 + 1, rand() % 100 + 1, rand() % 100 + 1);
+        }
+    }
+
+    void print(){
+        for(auto point: obj){
+            point.print();
+        }
+    }
+
+    void rotate_by_rad(char axes, double phi){
+        for(auto &point: obj){
+            point.rotate_by_rad(axes, phi);
+        }
+    }
+
+    void rotate_by_grad(char axes, double phi){
+        for(auto &point: obj){
+            point.rotate_by_grad(axes, phi);
+        }
+    }
+
+    void parallel_rotate_by_rad(char axes, double phi){
+        #pragma omp parallel
+        {
+            #pragma omp for schedule(auto)
+            for(int i = 0; i < obj.size(); ++i){
+                obj[i].rotate_by_rad(axes, phi);
+            }
+        }
+
+        #pragma omp barrier
+    }
+
+    void parallel_rotate_by_grad(char axes, double phi){
+        parallel_rotate_by_rad(axes, to_rad(phi));
+    }
+};
+
 int main(){
-    double3 q(5, 4, 3), n(q);
-    q.get_swaped_axes_forward().print();
-    q.get_swaped_axes_backward().print();
-    q.get_swaped_axes_backward().get_swaped_axes_forward().print();
-    q.get_swaped_axes_forward().get_swaped_axes_backward().print();
-    q.get_swaped_axes_forward().get_swaped_axes_forward().print();
-    q.get_swaped_axes_backward().get_swaped_axes_backward().print();
+    
+    // q.get_swaped_axes_forward().print();
+    // q.get_swaped_axes_backward().print();
+    // q.get_swaped_axes_backward().get_swaped_axes_forward().print();
+    // q.get_swaped_axes_forward().get_swaped_axes_backward().print();
+    // q.get_swaped_axes_forward().get_swaped_axes_forward().print();
+    // q.get_swaped_axes_backward().get_swaped_axes_backward().print();
+    double3 q(1, 1, 1), n(q);
+    // double phi;
+    // cin >> phi;
+    // q.get_rotate_by_grad('x', phi).print();
+    // q.get_rotate_by_grad('y', phi).print();
+    // q.get_rotate_by_grad('z', phi).print();
+    Obj3D cube(4);
+    cube.random_fill();
+    cube.print();
+    cube.parallel_rotate_by_grad('x', 90);
+    cube.print();
     return 0;
 }
 
