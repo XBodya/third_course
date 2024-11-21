@@ -6,6 +6,12 @@
 #include <string>
 #include <cmath>
 
+#define INIT_TIMER double start_time, run_time
+#define START_TIMER start_time = omp_get_wtime()
+#define STOP_TIMER run_time = omp_get_wtime() - start_time
+#define PRINT_TIME_MESSAGE(MESSAGE, TIME) cout << (MESSAGE) << " runtime: " << TIME << '\n'
+
+
 using namespace std;
 
 double to_grad(double rad){
@@ -197,7 +203,7 @@ public:
     void parallel_rotate_by_rad(char axes, double phi){
         #pragma omp parallel
         {
-            #pragma omp for schedule(auto)
+            #pragma omp for nowait schedule(auto)
             for(int i = 0; i < obj.size(); ++i){
                 obj[i].rotate_by_rad(axes, phi);
             }
@@ -219,17 +225,62 @@ int main(){
     // q.get_swaped_axes_forward().get_swaped_axes_backward().print();
     // q.get_swaped_axes_forward().get_swaped_axes_forward().print();
     // q.get_swaped_axes_backward().get_swaped_axes_backward().print();
-    double3 q(1, 1, 1), n(q);
+    // double3 q(1, 1, 1), n(q);
     // double phi;
     // cin >> phi;
     // q.get_rotate_by_grad('x', phi).print();
     // q.get_rotate_by_grad('y', phi).print();
     // q.get_rotate_by_grad('z', phi).print();
-    Obj3D cube(4);
+    INIT_TIMER;
+    int N[] = {1000, 2000, 10000, 50000};
+    for(auto cnt: N){
+        Obj3D test_case(cnt);
+        test_case.random_fill();
+        double test_phi = rand() % 361;
+        cout << "N=" << cnt << '\n';
+        START_TIMER;
+        test_case.rotate_by_grad('x', test_phi);
+        STOP_TIMER;
+        PRINT_TIME_MESSAGE("NO OMP", run_time);
+        
+        START_TIMER;
+        test_case.parallel_rotate_by_grad('x', test_phi);
+        STOP_TIMER;
+        // cout << "N=" << cnt << ' ';
+        PRINT_TIME_MESSAGE("With OMP", run_time);
+    }
+    cout << '\n';
+    // MAX MIN AVG TEST
+    Obj3D cube(100000);
+    
     cube.random_fill();
-    cube.print();
-    cube.parallel_rotate_by_grad('x', 90);
-    cube.print();
+    //cube.print();
+
+    // START_TIMER;
+    // cube.rotate_by_grad('x', 90);
+    // STOP_TIMER;
+    // PRINT_TIME_MESSAGE("NO OMP", run_time);
+
+    // START_TIMER;
+    // cube.parallel_rotate_by_grad('x', 90);
+    // STOP_TIMER;
+    // PRINT_TIME_MESSAGE("WITH OMP", run_time);
+    //cube.print();
+
+    int cnt_tests = 1000;
+    double max_time = 0, min_time=1e9 + 7, avg_time=0;
+    for(int i = 0; i < cnt_tests; ++i){
+        double phi = rand() % 361;
+        START_TIMER;
+        cube.parallel_rotate_by_grad('x', phi);
+        STOP_TIMER;
+        if(run_time > max_time) max_time = run_time;
+        if(min_time > run_time) min_time = run_time;
+        avg_time += (run_time / (double)cnt_tests);
+    }
+    PRINT_TIME_MESSAGE("MAX_TIME: ", max_time);
+    PRINT_TIME_MESSAGE("MIN_TIME: ", min_time);
+    PRINT_TIME_MESSAGE("AVG_TIME: ", avg_time);
     return 0;
 }
 
