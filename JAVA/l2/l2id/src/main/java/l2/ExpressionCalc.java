@@ -1,6 +1,9 @@
 package l2;
 
 import java.util.Stack;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
 
 public class ExpressionCalc {
     private String curExpression;
@@ -9,9 +12,12 @@ public class ExpressionCalc {
 
     private boolean havePostfixForm;
 
+    protected static HashMap<String, Double> tableOfTermValues;
+
     ExpressionCalc(String Expression) {
         curExpression = Expression;
         postfixExpression = "";
+        tableOfTermValues = new HashMap<>();
         havePostfixForm = false;
     }
 
@@ -20,7 +26,7 @@ public class ExpressionCalc {
         havePostfixForm = false;
     }
 
-    private int getPriority(Character value) {
+    private static int getPriority(Character value) {
         switch (value) {
             case '(':
                 return 0;
@@ -40,36 +46,59 @@ public class ExpressionCalc {
         return 3;
     }
 
-    public String GetStringNumber(int index, String str) {
+    public static String getStringNumber(int index, String str) {
         String curNum = "";
         for (int i = index; i < str.length(); ++i) {
             Character curChar = str.charAt(i);
             if (Character.isDigit(curChar))
                 curNum += curChar;
+            else if(curChar == '.' && i + 1 < str.length() && Character.isDigit(str.charAt(i + 1))){
+                    curNum += str.charAt(i);
+            }
             else
                 break;
         }
         return curNum;
     }
 
-    private boolean isOperationChars(char curChar) {
+    public static String getStringTerm(int index, String str){
+        String curTerm = "";
+        for(int i = index; i < str.length(); ++i){
+            Character curChar = str.charAt(i);
+            if(Character.isLetter(curChar))
+                curTerm += curChar;
+            else
+                break;
+        }
+        return curTerm;
+    }
+
+    private static boolean isOperationChars(char curChar) {
         return curChar == '(' || curChar == '+' || curChar == '-' || curChar == '*' || curChar == '/' || curChar == '^';
     }
 
-    private String reverseString(String str) {
+    private static String reverseString(String str) {
         return new StringBuilder(str).reverse().toString();
     }
 
     private String getPostfix() {
         String postfixString = "";
         Stack<Character> stack = new Stack<>();
-
+        ArrayList<String> listOfTerms = new ArrayList<>();
+        tableOfTermValues.clear();
         for (int i = 0; i < curExpression.length(); ++i) {
             Character curChar = curExpression.charAt(i);
             if (Character.isDigit(curChar)) {
-                String curNum = GetStringNumber(i, curExpression);
+                String curNum = getStringNumber(i, curExpression);
                 postfixString += curNum + " ";
                 i = Math.min(curExpression.length() - 1, i + curNum.length());
+                curChar = curExpression.charAt(i);
+            }
+            if(Character.isLetter(curChar)){
+                String curTerm = getStringTerm(i, curExpression);
+                listOfTerms.add(curTerm);
+                postfixString += curTerm + " ";
+                i = Math.min(curExpression.length() - 1, i + curTerm.length());
                 curChar = curExpression.charAt(i);
             }
             if (curChar == '(') {
@@ -98,6 +127,23 @@ public class ExpressionCalc {
         }
         lastOperations = reverseString(lastOperations);
         postfixString += lastOperations;
+
+        Scanner inputScanner = new Scanner(System.in);
+        String userNotify = "Enter values for variables (by current order): ";
+        for (int i = 0; i < listOfTerms.size() - 1; ++i) {
+            userNotify += (listOfTerms.get(i) + " ");
+        }
+        if(!listOfTerms.isEmpty())
+            userNotify += listOfTerms.get(listOfTerms.size() - 1);
+        System.out.println(userNotify);
+        for(int cntOfUsed = 0; cntOfUsed < listOfTerms.size(); ++cntOfUsed){
+            tableOfTermValues.put(listOfTerms.get(cntOfUsed), inputScanner.nextDouble());
+            //System.out.println(tableOfTermValues.get(listOfTerms.get(cntOfUsed)));
+        }
+        for (String term : listOfTerms) {
+            postfixString = postfixString.replaceAll(term, tableOfTermValues.get(term).toString());
+        }
+        inputScanner.close();
         return postfixString;
     }
 
@@ -106,7 +152,7 @@ public class ExpressionCalc {
         havePostfixForm = true;
     }
 
-    private double action(char operations, double a, double b) throws OperationIsNotSupportException {
+    private static double action(char operations, double a, double b) throws OperationIsNotSupportException {
         switch (operations) {
             case '+':
                 return a + b;
@@ -130,7 +176,7 @@ public class ExpressionCalc {
         for (int i = 0; i < postfixExpression.length(); ++i) {
             Character curChar = postfixExpression.charAt(i);
             if (Character.isDigit(curChar)) {
-                String curNum = GetStringNumber(i, postfixExpression);
+                String curNum = getStringNumber(i, postfixExpression);
                 resultOfOperations.push(Double.parseDouble(curNum));
                 i = Math.min(postfixExpression.length() - 1, i + curNum.length());
                 curChar = postfixExpression.charAt(i);
