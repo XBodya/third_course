@@ -5,10 +5,29 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
+/*
+ * Класс предназначенный для вычисления математических выражений
+ * Поддерживаются операции +, -, *, /, ^(возведение в степень)
+ * Есть поддержка целых чисел, десятичных дробей.
+ * Есть поддержка перемкенных, которые могут быть получены от пользователя
+ * @param curExpressiion - строка хранящая основное выражение, которое должно быть в инфиксной форме
+ * @param postfixExpression - преобразованное выражение в обратной польской нотации
+ * @param havePostfixForm - флаг имеет ли выражение постфиксную форму для ее подсчета
+ *
+ * @param tableOfTermValues - таблица значений переменных которые ввел пользователь;
+ * @method ExpressionCalc - конструктор для каркулятора принимающий выражение инфиксное
+ * @method getPriority - выдает приоритет выполения операций
+ * @method getStringNumber - возвращает число в виде строки в текущей строке с заданного индекса
+ * @method getStringTerm - парсинг переменных
+ * @method action - выполнить математическую операцию
+ * @method calculate - посчитать результат постфиксного выражения
+ * @method getPostfix - вернуть инфиксное выражение в постфиксное
+ * @method toPostfix - перевести текущее выражение в каркуляторе в постфиксное
+ */
 public class ExpressionCalc {
     private String curExpression;
 
-    String postfixExpression;
+    private String postfixExpression;
 
     private boolean havePostfixForm;
 
@@ -26,6 +45,10 @@ public class ExpressionCalc {
         havePostfixForm = false;
     }
 
+    /*
+     * @param value символ строки
+     * @return приоритет
+     */
     private static int getPriority(Character value) {
         switch (value) {
             case '(':
@@ -46,26 +69,35 @@ public class ExpressionCalc {
         return 3;
     }
 
+    /*
+     * @param index индекс с которого будет парситься строка на наличие числа
+     * @param str строка откуда будет парситься
+     * @return число в виде строки
+     */
     public static String getStringNumber(int index, String str) {
         String curNum = "";
         for (int i = index; i < str.length(); ++i) {
             Character curChar = str.charAt(i);
             if (Character.isDigit(curChar))
                 curNum += curChar;
-            else if(curChar == '.' && i + 1 < str.length() && Character.isDigit(str.charAt(i + 1))){
-                    curNum += str.charAt(i);
-            }
-            else
+            else if (curChar == '.' && i + 1 < str.length() && Character.isDigit(str.charAt(i + 1))) {
+                curNum += str.charAt(i);
+            } else
                 break;
         }
         return curNum;
     }
 
-    public static String getStringTerm(int index, String str){
+    /*
+     * @param index индекс с которого будет парситься строка на наличие переменной пользователя
+     * @param str строка откуда будет парситься
+     * @return название переменной
+     */
+    public static String getStringTerm(int index, String str) {
         String curTerm = "";
-        for(int i = index; i < str.length(); ++i){
+        for (int i = index; i < str.length(); ++i) {
             Character curChar = str.charAt(i);
-            if(Character.isLetter(curChar))
+            if (Character.isLetter(curChar))
                 curTerm += curChar;
             else
                 break;
@@ -94,7 +126,7 @@ public class ExpressionCalc {
                 i = Math.min(curExpression.length() - 1, i + curNum.length());
                 curChar = curExpression.charAt(i);
             }
-            if(Character.isLetter(curChar)){
+            if (Character.isLetter(curChar)) {
                 String curTerm = getStringTerm(i, curExpression);
                 listOfTerms.add(curTerm);
                 postfixString += curTerm + " ";
@@ -133,12 +165,12 @@ public class ExpressionCalc {
         for (int i = 0; i < listOfTerms.size() - 1; ++i) {
             userNotify += (listOfTerms.get(i) + " ");
         }
-        if(!listOfTerms.isEmpty())
+        if (!listOfTerms.isEmpty())
             userNotify += listOfTerms.get(listOfTerms.size() - 1);
         System.out.println(userNotify);
-        for(int cntOfUsed = 0; cntOfUsed < listOfTerms.size(); ++cntOfUsed){
+        for (int cntOfUsed = 0; cntOfUsed < listOfTerms.size(); ++cntOfUsed) {
             tableOfTermValues.put(listOfTerms.get(cntOfUsed), inputScanner.nextDouble());
-            //System.out.println(tableOfTermValues.get(listOfTerms.get(cntOfUsed)));
+            // System.out.println(tableOfTermValues.get(listOfTerms.get(cntOfUsed)));
         }
         for (String term : listOfTerms) {
             postfixString = postfixString.replaceAll(term, tableOfTermValues.get(term).toString());
