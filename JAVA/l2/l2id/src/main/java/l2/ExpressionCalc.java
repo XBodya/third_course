@@ -159,23 +159,24 @@ public class ExpressionCalc {
         }
         lastOperations = reverseString(lastOperations);
         postfixString += lastOperations;
-
-        Scanner inputScanner = new Scanner(System.in);
-        String userNotify = "Enter values for variables (by current order): ";
-        for (int i = 0; i < listOfTerms.size() - 1; ++i) {
-            userNotify += (listOfTerms.get(i) + " ");
+        if(!listOfTerms.isEmpty()){
+            Scanner inputScanner = new Scanner(System.in);
+            String userNotify = "Enter values for variables (by current order): ";
+            for (int i = 0; i < listOfTerms.size() - 1; ++i) {
+                userNotify += (listOfTerms.get(i) + " ");
+            }
+            if (!listOfTerms.isEmpty())
+                userNotify += listOfTerms.get(listOfTerms.size() - 1);
+            System.out.println(userNotify);
+            for (int cntOfUsed = 0; cntOfUsed < listOfTerms.size(); ++cntOfUsed) {
+                tableOfTermValues.put(listOfTerms.get(cntOfUsed), inputScanner.nextDouble());
+                // System.out.println(tableOfTermValues.get(listOfTerms.get(cntOfUsed)));
+            }
+            for (String term : listOfTerms) {
+                postfixString = postfixString.replaceAll(term, tableOfTermValues.get(term).toString());
+            }
+            inputScanner.close();
         }
-        if (!listOfTerms.isEmpty())
-            userNotify += listOfTerms.get(listOfTerms.size() - 1);
-        System.out.println(userNotify);
-        for (int cntOfUsed = 0; cntOfUsed < listOfTerms.size(); ++cntOfUsed) {
-            tableOfTermValues.put(listOfTerms.get(cntOfUsed), inputScanner.nextDouble());
-            // System.out.println(tableOfTermValues.get(listOfTerms.get(cntOfUsed)));
-        }
-        for (String term : listOfTerms) {
-            postfixString = postfixString.replaceAll(term, tableOfTermValues.get(term).toString());
-        }
-        inputScanner.close();
         return postfixString;
     }
 
