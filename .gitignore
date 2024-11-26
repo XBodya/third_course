@@ -39,5 +39,7 @@
 .venv/
 .vscode/settings.json
 
+.idea
+
 *.png
 *.jpg
