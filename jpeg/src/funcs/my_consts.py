@@ -51,4 +51,4 @@ alternative = np.array([
     [72, 92, 95, 98, 112, 100, 103, 99]
 ])
 
-# matrix_of_quantization = alternative
+matrix_of_quantization = alternative

@@ -7,7 +7,7 @@ from math import pi
 from my_consts import *
 import itertools
 
-
+# инициалтзация матрицы квантования
 def init_matrix_of_q(_quality_factor):
     for i in range(8):
         for j in range(8):
@@ -19,6 +19,7 @@ test_eye = np.eye(5)
 
 matrix_of_dct = np.zeros((8, 8), dtype=np.float64)
 
+# создание матрицы для дискретно-косинусного преобразования
 for i in range(8):
     for j in range(8):
         if i == 0:
@@ -32,7 +33,9 @@ inv_matrix_of_dct = linalg.inv(matrix_of_dct)
 
 inv_transposed_matrix_of_dct = linalg.inv(transposed_matrix_of_dct)
 
-
+"""
+Фикс изображения для которых нельзя построить матрицу 
+"""
 def fix_image_size_for_jpeg(_pixels_arr, size):
     need_cols = (8 - (size[0] % 8)) if size[0] % 8 else 0
     need_rows = (8 - (size[1] % 8)) if size[1] % 8 else 0
@@ -134,10 +137,6 @@ def subsampling(array_color_channel):
             array_color_channel[i + 1][j + 1] = average_color
 
 
-def inv_subsampling(_pixel_arr):
-    pass
-
-
 def discrete_cosine_transform(_pixels_arr) -> None:
     # test_case = [
     #     [40, 24, 15, 19, 28, 24, 19, 15],
@@ -173,7 +172,7 @@ def inv_quantization(_pixel_arr):
     return np.round(_pixel_arr * matrix_of_quantization).astype(int)
 
 
-def RLE(_pixel_arr):
+def block_to_RLE(_pixel_arr):
     message = [str(int(_pixel_arr[i // 8][i % 8])) for i in zigzag_way]
     encoded_string = []
     i = 0
@@ -192,7 +191,7 @@ def RLE(_pixel_arr):
     return encoded_string
 
 
-def inv_RLE(_rle_array):
+def RLE_to_block(_rle_array):
     rle_elements = []
     for i, j in _rle_array:
         for k in range(i):
@@ -202,11 +201,25 @@ def inv_RLE(_rle_array):
         matrix_peace[zigzag_way[i] // 8][zigzag_way[i] % 8] = rle_elements[i]
     return matrix_peace
 
+def channel_to_RLE(_rle_arr):
+    rle_res = []
+    for i in range(_rle_arr.shape[0]):
+        # print(_rle_arr[i])
+        rle_res.append(block_to_RLE(_rle_arr[i]))
+    return rle_res
+
+
+def RLE_to_channel(_rle_arr):
+    channel = []
+    for i in range(len(_rle_arr)):
+        print(_rle_arr[i])
+        channel.append(RLE_to_block(_rle_arr[i]))
+    return np.array(channel)
 
 def divide_on_blocks(_pixel_array):
     blocks = []
     img_w, img_h = _pixel_array.shape[0], _pixel_array.shape[1]
-    print(img_w, img_h)
+    # print(img_w, img_h)
     for i in range(0, img_w, 8):
         for j in range(0, img_h, 8):
             blocks.append(_pixel_array[i:i+8, j:j+8])
@@ -220,7 +233,7 @@ def combine_blocks(blocks, _shape):
         for j in range(_shape[1] // 8):
             for k in range(8):
                 for h in range(8):
-                    combined_channel[i + k][j + h] = blocks[block_ind][k][h]
+                    combined_channel[i * 8 + k][j * 8 + h] = blocks[block_ind][k][h]
             block_ind += 1
     return combined_channel
 
