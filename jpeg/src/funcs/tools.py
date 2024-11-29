@@ -5,7 +5,9 @@ from numpy import linalg
 from typing import Tuple, List
 from math import pi
 from my_consts import *
+import huffman
 import itertools
+import pickle
 
 # инициалтзация матрицы квантования
 def init_matrix_of_q(_quality_factor):
@@ -212,7 +214,7 @@ def channel_to_RLE(_rle_arr):
 def RLE_to_channel(_rle_arr):
     channel = []
     for i in range(len(_rle_arr)):
-        print(_rle_arr[i])
+        # print(_rle_arr[i])
         channel.append(RLE_to_block(_rle_arr[i]))
     return np.array(channel)
 
@@ -256,6 +258,32 @@ def combine_color_channels(first: np.array, second, third):
                 (first[i][j], second[i][j], third[i][j]), dtype=np.uint8)
     return image_plot
 
+def block_encode_huffman(block):
+    """
+    .myjpeg block encode
+    table size: 4 bits
+    char: 13 bits (1rst bit for minus), 12 bits for value result [-4096, 4096], value 4 bits
+    huffmanRLE
+    """
+    count = []
+    value = []
+    for rle_pair in block:
+        count.append(rle_pair[0])
+        value.append(rle_pair[1])
+    root = huffman.build_huffman_tree(value, count)
+    huffman_codes = huffman.generate_huffman_codes(root)
+    table_size = bin(len(value))[2:]
+    encoded_block = f"{table_size:4}"
+    print(block)
+    for char, code in huffman_codes.items():
+        print(f"Character: {char}, Code: {code}")
+        have_minus = 0
+        if char < 0:
+            have_minus = 1
+        encoded_block += f"{have_minus:1}{bin(char)[2:]:12}{bin(int(code)[2:]}"
+    for element in block:
+        encoded_block += str(huffman_codes[element[1]]) * element[0]
+    print(encoded_block)
 
 def encode_jpeg(quality_factor, path_to_image, out='filename.myjpeg'):
     init_matrix_of_q(_quality_factor=quality_factor)
@@ -304,7 +332,8 @@ if __name__ == '__main__':
     # print((test_eye * 5) / (test_eye * 5))
     # print(np.dot(inv_matrix_of_dct, matrix_of_dct))
     # print(inv_transposed_matrix_of_dct)
-    print(convertation_matrix_ycbcr2rgb)
-    print(convertation_matrix_rgb2ycbcr)
-    print(linalg.inv(convertation_matrix_ycbcr2rgb))
+    # print(convertation_matrix_ycbcr2rgb)
+    # print(convertation_matrix_rgb2ycbcr)
+    # print(linalg.inv(convertation_matrix_ycbcr2rgb))
     # print(convert_pixel_rgb2ycbcr((0, 20, 100)))
+    pass

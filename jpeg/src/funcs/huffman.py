@@ -33,12 +33,13 @@ def generate_huffman_codes(node, code="", huffman_codes={}):
 
     return huffman_codes
 
-chars = ['a', 'b', 'c', 'd', 'e', 'f']
-freq = [4, 7, 15, 17, 22, 42]
+if __name__ == "__main__":
+    chars = ['a', 'b', 'c', 'd', 'e', 'f']
+    freq = [4, 7, 15, 17, 22, 42]
 
-root = build_huffman_tree(chars, freq)
+    root = build_huffman_tree(chars, freq)
 
-huffman_codes = generate_huffman_codes(root)
+    huffman_codes = generate_huffman_codes(root)
 
-for char, code in huffman_codes.items():
-    print(f"Character: {char}, Code: {code}")
+    for char, code in huffman_codes.items():
+        print(f"Character: {char}, Code: {code}")

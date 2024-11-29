@@ -2,7 +2,8 @@ import unittest
 import tools
 from PIL import Image
 import numpy as np
-
+import huffman as hff
+import pickle
 
 def is_clr(color):
     return 0 <= color <= 255
@@ -192,12 +193,19 @@ class MyTests():
             divided_Cr[i] = tools.quantization(
                 (divided_Cr[i]))
 
+        # print(f"MAX_Y{np.max(divided_Y)}")
+        # print(f"MAX_Y{np.max(divided_Cb)}")
+        # print(f"MAX_Y{np.max(divided_Cr)}")
+
         Y_RLE = tools.channel_to_RLE(divided_Y)
         Cb_RLE = tools.channel_to_RLE(divided_Cb)
         Cr_RLE = tools.channel_to_RLE(divided_Cr)
 
-        # print(Y_RLE)
-        
+        tools.block_encode_huffman(Y_RLE[0])
+
+        # with open('myjpeg.myjpeg', 'wb') as f:
+        #     pickle.dump([Y_RLE, Cb_RLE, Cr_RLE], f)
+
         divided_Y = tools.RLE_to_channel(Y_RLE)
         divided_Cb = tools.RLE_to_channel(Cb_RLE)
         divided_Cr = tools.RLE_to_channel(Cr_RLE)
