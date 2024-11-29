@@ -258,11 +258,15 @@ def combine_color_channels(first: np.array, second, third):
                 (first[i][j], second[i][j], third[i][j]), dtype=np.uint8)
     return image_plot
 
+def int_to_bin_str(number, cnt_null):
+    return bin(abs(number))[2:].zfill(cnt_null)
+
 def block_encode_huffman(block):
     """
     .myjpeg block encode
     table size: 4 bits
-    char: 13 bits (1rst bit for minus), 12 bits for value result [-4096, 4096], value 4 bits
+        char: 13 bits (1rst bit for minus), 12 bits for value result [-4096, 4096], value 4 bits
+    count_of_pair: 4 bits
     huffmanRLE
     """
     count = []
@@ -272,17 +276,18 @@ def block_encode_huffman(block):
         value.append(rle_pair[1])
     root = huffman.build_huffman_tree(value, count)
     huffman_codes = huffman.generate_huffman_codes(root)
-    table_size = bin(len(value))[2:]
-    encoded_block = f"{table_size:4}"
+    table_size = len(huffman_codes.items())
+    encoded_block = f"{int_to_bin_str(table_size, 4)}"
     print(block)
-    for char, code in huffman_codes.items():
+    for char, code in sorted(huffman_codes.items(), key=lambda x: x[1], reverse=True):
         print(f"Character: {char}, Code: {code}")
         have_minus = 0
         if char < 0:
             have_minus = 1
-        encoded_block += f"{have_minus:1}{bin(char)[2:]:12}{bin(int(code)[2:]}"
-    for element in block:
-        encoded_block += str(huffman_codes[element[1]]) * element[0]
+        encoded_block += f"{huffman_code_length}{have_minus}{int_to_bin_str(char, 12)}{code}"
+        print(char, int_to_bin_str(char, 12))
+    # for element in block:
+    #     encoded_block += str(huffman_codes[element[1]]) * element[0]
     print(encoded_block)
 
 def encode_jpeg(quality_factor, path_to_image, out='filename.myjpeg'):

@@ -157,8 +157,8 @@ class MyTests():
         tools.save_image_fromarray(
             new_rgb_plot, f"jpeg/src/imgs/subsampling_{filename}")
 
-    def test_dct_and_quan(filename):
-        tools.init_matrix_of_q(200)
+    def test_dct_and_quan(filename, quantion_coeff):
+        tools.init_matrix_of_q(quantion_coeff)
         
         # print('Матрица квантования', tools.matrix_of_quantization, sep='\n')
         current_image = Image.open(filename).convert("RGB")
@@ -201,7 +201,7 @@ class MyTests():
         Cb_RLE = tools.channel_to_RLE(divided_Cb)
         Cr_RLE = tools.channel_to_RLE(divided_Cr)
 
-        tools.block_encode_huffman(Y_RLE[0])
+        # tools.block_encode_huffman(Y_RLE[0])
 
         # with open('myjpeg.myjpeg', 'wb') as f:
         #     pickle.dump([Y_RLE, Cb_RLE, Cr_RLE], f)
@@ -274,5 +274,5 @@ if __name__ == '__main__':
     # DctTest().test_encode()
     # ConvertationTest().test_rgb2ycbcr()
     # MyTests("my_image.png")
-    image = "testforsampling.jpg"
+    image = "testfile.jpg"
     MyTests.test_dct_and_quan(image)

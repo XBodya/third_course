@@ -34,7 +34,7 @@ def generate_huffman_codes(node, code="", huffman_codes={}):
     return huffman_codes
 
 if __name__ == "__main__":
-    chars = ['a', 'b', 'c', 'd', 'e', 'f']
+    chars = ['a', 'a', 'c', 'd', 'e', 'f']
     freq = [4, 7, 15, 17, 22, 42]
 
     root = build_huffman_tree(chars, freq)
