@@ -87,12 +87,10 @@ def fix_image_size_for_jpeg(_pixels_arr, size):
 
 
 def matrix_convert_pixel_rgb2ycbcr(_pixel_rgb: Tuple[int, int, int]) -> Tuple[int, int, int]:
-    # return np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector_rgb2ycbcr
     return np.round((np.dot(_pixel_rgb, convertation_matrix_rgb2ycbcr) + convertation_vector)[0]).astype(int)
 
 
 def matrix_convert_pixel_ycbcr2rgb(_pixel_ycbcr: Tuple[int, int, int]) -> Tuple[int, int, int]:
-    # return np.dot((_pixel_ycbcr - convertation_vector_rgb2ycbcr), convertation_matrix_ycbcr2rgb)
     return np.round(np.dot((_pixel_ycbcr - convertation_vector), convertation_matrix_ycbcr2rgb)[0]).astype(int)
 
 
@@ -122,17 +120,6 @@ def subsampling(array_color_channel):
             average_color += array_color_channel[i][j + 1]
             average_color += array_color_channel[i + 1][j + 1]
             average_color = round(average_color / 4)
-            # array_color_channel[i][j] = average_color
-            # array_color_channel[i + 1][j] = average_color
-            # array_color_channel[i][j + 1] = average_color
-            # array_color_channel[i + 1][j + 1] = average_color
-
-            # print(f"BLOCK, avg:{average_color}")
-            # print(array_color_channel[i][j],
-            #       array_color_channel[i][j + 1])
-            # print(array_color_channel[i + 1][j],
-            #       array_color_channel[i + 1][j + 1])
-
             array_color_channel[i][j] = average_color
             array_color_channel[i + 1][j] = average_color
             array_color_channel[i][j + 1] = average_color
@@ -140,25 +127,6 @@ def subsampling(array_color_channel):
 
 
 def discrete_cosine_transform(_pixels_arr) -> None:
-    # test_case = [
-    #     [40, 24, 15, 19, 28, 24, 19, 15],
-    #     [38, 34, 35, 35, 31, 28, 27, 29],
-    #     [40, 47, 49, 40, 33, 29, 32, 43],
-    #     [42, 49, 50, 39, 34, 30, 32, 46],
-    #     [40, 47, 46, 35, 31, 32, 35, 43],
-    #     [38, 43, 42, 31, 27, 27, 28, 33],
-    #     [39, 33, 25, 17, 14, 15, 19, 26],
-    #     [29, 16,  6,  1, -4,  0,  7, 18]
-    # ]
-   #  _pixels_arr = test_case
-    # _test_arr = np.zeros((8, 8), dtype=np.float64)
-    # for i in range(8):
-    #     for j in range(8):
-    #         tmp = 0
-    #         for x in range(8):
-    #             for y in range(8):
-    #                 tmp +=
-
     return np.round(np.dot(matrix_of_dct, np.dot(_pixels_arr, transposed_matrix_of_dct))).astype(int)
 
 
