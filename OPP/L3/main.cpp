@@ -232,7 +232,7 @@ int main(){
     // q.get_rotate_by_grad('y', phi).print();
     // q.get_rotate_by_grad('z', phi).print();
     INIT_TIMER;
-    int N[] = {1000, 2000, 10000, 50000};
+    int N[] = {10000, 20000, 100000, 500000};
     for(auto cnt: N){
         Obj3D test_case(cnt);
         test_case.random_fill();

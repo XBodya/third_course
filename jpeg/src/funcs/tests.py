@@ -157,7 +157,7 @@ class MyTests():
         tools.save_image_fromarray(
             new_rgb_plot, f"jpeg/src/imgs/subsampling_{filename}")
 
-    def test_dct_and_quan(filename, quantion_coeff):
+    def test_dct_and_quan(filename, quantion_coeff=10):
         tools.init_matrix_of_q(quantion_coeff)
         
         # print('Матрица квантования', tools.matrix_of_quantization, sep='\n')
@@ -246,7 +246,7 @@ class MyTests():
             combined_Y, combined_Cb, combined_Cr)
         new_rgb_plot = tools.array_ycbcr2rgb(new_ycbcr_plot)
         tools.save_image_fromarray(
-            new_rgb_plot, f"jpeg/src/imgs/dct_and_quant_{filename}")
+            new_rgb_plot, f"jpeg/src/imgs/dct_and_quant_{filename}.jpg")
         print("OK")
 
         # print(Y)
@@ -274,5 +274,5 @@ if __name__ == '__main__':
     # DctTest().test_encode()
     # ConvertationTest().test_rgb2ycbcr()
     # MyTests("my_image.png")
-    image = "testfile.jpg"
+    image = "sample.bmp"
     MyTests.test_dct_and_quan(image)
