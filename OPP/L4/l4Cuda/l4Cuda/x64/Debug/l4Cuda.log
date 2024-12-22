@@ -8,7 +8,7 @@ C:\Users\games\gits\third_course\OPP\L4\l4Cuda\l4Cuda\kernel.cu(124): warning #5
   Remark: The warnings can be suppressed with "-diag-suppress <warning-number>"
   
   kernel.cu
-  tmpxft_00006254_00000000-7_kernel.cudafe1.cpp
+  tmpxft_00004e64_00000000-7_kernel.cudafe1.cpp
 C:\Users\games\gits\third_course\OPP\L4\l4Cuda\l4Cuda\kernel.cu(46): warning C4244: =: преобразование "int" в "float", возможна потеря данных
      Создается библиотека C:\Users\games\gits\third_course\OPP\L4\l4Cuda\x64\Debug\l4Cuda.lib и объект C:\Users\games\gits\third_course\OPP\L4\l4Cuda\x64\Debug\l4Cuda.exp
 LINK : warning LNK4098: библиотека по умолчанию "LIBCMT" конфликтует с использованием других библиотек; используйте /NODEFAULTLIB:library

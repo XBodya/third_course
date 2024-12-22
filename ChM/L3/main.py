@@ -94,7 +94,7 @@ def main():
             linewidth=2, label='функция')
     ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), '--', color='b',
             linewidth=2, label='c1')
-    ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), '--', color='m',
+    ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs3), sample)), '--', color='m',
             linewidth=2, label='c3')
     ax.set_xlabel('x label')
     ax.set_ylabel('y label')

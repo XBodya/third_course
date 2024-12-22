@@ -122,7 +122,7 @@ cudaError_t cudaTranspose(float *host_in, float *host_out, int width, int height
 
 int main() {
     INIT_TIMER;
-    int w = 60000, h = 20000;
+    int w = 60000, h = 3000;
     size_t size = w * h * sizeof(float);
     float* h_in = (float*)malloc(size);
     float* host_out = (float*)malloc(size);
