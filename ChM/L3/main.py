@@ -87,16 +87,17 @@ def test():
     print(calculate_coefficients_for_polynom_with_ort_base(LEFT, RIGHT, 5, 10000))
     
 
-def main():
-    degree = 4
-    N = 10 * (degree + 1) ** 2
+def main(degree, N):
+    # degree = 3
+    # N = 10 * (degree + 1) ** 2
+    # N = 10
     # N = 10
     init_ort_base(degree, N)
-    print(*ort_base)
+    # print(*ort_base)
     coeffs1 = calculate_coefficients_for_polynom(LEFT, RIGHT, degree, N)
     coeffs2 = calculate_coefficients_for_polynom(LEFT, RIGHT, degree, N, calculate_integral_by_simpson_method)
-    coeffs3 = calculate_coefficients_for_polynom_with_ort_base(LEFT, RIGHT, degree, N)
-    print(coeffs1, coeffs2, coeffs3)
+    # coeffs3 = calculate_coefficients_for_polynom_with_ort_base(LEFT, RIGHT, degree, N)
+    # print(coeffs1, coeffs2, coeffs3)
     sample = np.linspace(LEFT, RIGHT, N)
     f_sample = function(sample)
     fig, ax = plt.subplots(figsize=(20, 9))
@@ -108,8 +109,8 @@ def main():
     ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), '--', color='b',
             linewidth=2, label='Метод трапеций')
     # ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), 'o', color='b')
-    ax.plot(sample, list(map(lambda x: calculate_polynom_by_ort_coefficients(x, coeffs3), sample)), '--', color='m',
-             linewidth=2, label='Ортогональный базис')
+    # ax.plot(sample, list(map(lambda x: calculate_polynom_by_ort_coefficients(x, coeffs3), sample)), '--', color='m',
+    #          linewidth=2, label='Ортогональный базис')
     # ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), 'o', color='m')
     ax.set_xlabel('x label')
     ax.set_ylabel('y label')
