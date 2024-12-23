@@ -10,6 +10,14 @@ RIGHT = 1.5
 
 ort_base = None
 
+def get_exec_time(func):
+    def print_time_of_func(*args, **kwargs):
+        start_time = time.time()
+        func(*args, **kwargs)
+        print(f"| Exec time: {time.time() - start_time}")
+
+    return print_time_of_func
+
 def function(x):
     return (1 + np.abs(np.log(x))) / (1 + 25 * x * x)
 
@@ -56,7 +64,6 @@ def init_ort_base(degree_polynom, N, integrate_method=calculate_integral_by_simp
             sub_proj = sub_proj + projection(sample_x, MyPolynom([0] * i + [i]), ort_base[j], LEFT, RIGHT, degree_polynom, N, integrate_method)
         ort_base[i] = MyPolynom([0] * i + [i]) - sub_proj
 
-
 def calculate_coefficients_for_polynom_with_ort_base(a, b, degree_polynom, N, integrate_method=calculate_integral_by_trapezoid_method):
     start = time.time()
     coefficients = np.zeros(degree_polynom + 1)
@@ -65,9 +72,12 @@ def calculate_coefficients_for_polynom_with_ort_base(a, b, degree_polynom, N, in
         N += N % 2
     sample_x = np.linspace(a, b, N + 1)
     for i in range(degree_polynom + 1):
-        coefficients[i] =  integrate_method(sample_x, lambda x: function(x) * ort_base[i].get_value(x), a, b, N)
+        coefficients[i] =  integrate_method(sample_x, lambda x: function(x) * ort_base[i].get_value(x), a, b, N) / integrate_method(sample_x, lambda x: ort_base[i].get_value(x) * ort_base[i].get_value(x), a, b, N)
     print(f"Time exec for ort: {time.time() - start}")
     return coefficients
+
+def calculate_polynom_by_ort_coefficients(x_point, coefficients):
+    return sum([coefficients[i] * ort_base[i].get_value(x_point) for i in range(len(coefficients))])
 
 def test():
     init_ort_base(5, 10000)
@@ -78,24 +88,29 @@ def test():
     
 
 def main():
-    degree = 10
+    degree = 4
     N = 10 * (degree + 1) ** 2
+    # N = 10
     init_ort_base(degree, N)
-    # N = 6
+    print(*ort_base)
     coeffs1 = calculate_coefficients_for_polynom(LEFT, RIGHT, degree, N)
     coeffs2 = calculate_coefficients_for_polynom(LEFT, RIGHT, degree, N, calculate_integral_by_simpson_method)
     coeffs3 = calculate_coefficients_for_polynom_with_ort_base(LEFT, RIGHT, degree, N)
+    print(coeffs1, coeffs2, coeffs3)
     sample = np.linspace(LEFT, RIGHT, N)
     f_sample = function(sample)
     fig, ax = plt.subplots(figsize=(20, 9))
+    ax.plot(sample, f_sample, 'o', color='black', linewidth=1)
+    ax.plot(sample, f_sample, color='r', linewidth=2, label='функция')
     ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs2), sample)), '--', color='g',
-            linewidth=4, label='c1')
-    ax.plot(sample, f_sample, color='r',
-            linewidth=2, label='функция')
+            linewidth=4, label='Метод Симпсона')
+    # ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs2), sample)), 'o', color='g')
     ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), '--', color='b',
-            linewidth=2, label='c1')
-    ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs3), sample)), '--', color='m',
-            linewidth=2, label='c3')
+            linewidth=2, label='Метод трапеций')
+    # ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), 'o', color='b')
+    ax.plot(sample, list(map(lambda x: calculate_polynom_by_ort_coefficients(x, coeffs3), sample)), '--', color='m',
+             linewidth=2, label='Ортогональный базис')
+    # ax.plot(sample, list(map(lambda x: calculate_polynom_by_coefficients(x, coeffs1), sample)), 'o', color='m')
     ax.set_xlabel('x label')
     ax.set_ylabel('y label')
     plt.grid()
