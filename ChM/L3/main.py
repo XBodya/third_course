@@ -80,12 +80,32 @@ def calculate_polynom_by_ort_coefficients(x_point, coefficients):
     return sum([coefficients[i] * ort_base[i].get_value(x_point) for i in range(len(coefficients))])
 
 def test():
-    init_ort_base(5, 10000)
-    print(ort_base)
-    for i in ort_base:
-        print(i)
-    print(calculate_coefficients_for_polynom_with_ort_base(LEFT, RIGHT, 5, 10000))
-    
+    init_ort_base_lezhandr(10)
+    print(*ort_base, sep='\n')
+    init_ort_base(10, 1000)
+    print(*ort_base, sep='\n')
+    init_ort_base_lezhandr_to_someone(10, LEFT, RIGHT)
+    print(*ort_base, sep='\n')
+
+
+def init_ort_base_lezhandr(degree_polynom):
+    global ort_base
+    ort_base = [None] * (degree_polynom + 1)
+    ort_base[0] = MyPolynom([1])
+    ort_base[1] = MyPolynom([0, 1])
+    for i in range(2, degree_polynom + 1):
+        ort_base[i] = MyPolynom([0, (2*i - 1)/(i)]) * ort_base[i - 1] - MyPolynom([(i - 1) / (i)]) * ort_base[i - 2]
+
+def init_ort_base_lezhandr_to_someone(degree_polynom, a, b):
+    global ort_base
+    ort_base = [None] * (degree_polynom + 1)
+    ort_base[0] = MyPolynom([1])
+    ort_base[1] = MyPolynom([(-a-b)/(b-a), 2/(b - a)])
+    for i in range(2, degree_polynom + 1):
+        ort_base[i] = MyPolynom([(2*i - 1)/(i)]) * ort_base[1] * ort_base[i - 1] - MyPolynom([(i - 1) / (i)]) * ort_base[i - 2]
+
+
+def calculate_coefficients_for_polynom_with_ort_base_by_lezhdr_polynom(a, b, degree_polynom, N, integrate_method=calculate_integral_by_trapezoid_method): ...
 
 def main(degree, N):
     # degree = 3
@@ -119,5 +139,6 @@ def main(degree, N):
     plt.legend()
     plt.show()
 
-main()
-# test()
+
+# main()
+test()
